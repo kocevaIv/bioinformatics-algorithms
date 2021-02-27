@@ -1,8 +1,9 @@
 import random
 
+
 # counts the occurances of each "ACTG" in the motfis array
 # returns a dictionary with counts for each base in the j-th column of the motifs array/matrix
-def Count(Motifs):
+def count(Motifs):
     count = initializeCountArray(Motifs)
     t = len(Motifs)
     for i in range(t):
@@ -11,6 +12,7 @@ def Count(Motifs):
             symbol = Motifs[i][j]
             count[symbol][j] += 1
     return count
+
 
 # helper method
 def initializeCountArray(Motifs):
@@ -24,15 +26,17 @@ def initializeCountArray(Motifs):
                 count[symbol].append(1)
     return count
 
+
 # retunrs a profile with the frequency of occurance for each base in the j-th column of the motifs matrix
-def Profile(Motifs):
+def profile(Motifs):
     t = len(Motifs)
     k = len(Motifs[0])
     profile = {}
-    count = Count(Motifs)
+    count = count(Motifs)
     for symbol, countArray in count.items():
         profile[symbol] = [x / t for x in countArray]
     return profile
+
 
 # finds the consensus string from the count matrix for set of motifs
 def Consensus(Motifs):
@@ -61,6 +65,7 @@ def Score(Motifs):
                 score += count[symbol][j]
     return score
 
+
 # calculates the probability of Text using the Profile matrix of probabilities
 def Pr(Text, Profile):
     pr = 1
@@ -70,6 +75,7 @@ def Pr(Text, Profile):
             if Text[index] == symbol:
                 pr = pr * Profile[symbol][index]
     return pr
+
 
 def ProfileMostProbableKmer(text, k, profile):
     highestProbability = -1
@@ -81,6 +87,7 @@ def ProfileMostProbableKmer(text, k, profile):
             highestProbability = prob
             mostProbablePattern = pattern
     return mostProbablePattern
+
 
 def GreedyMotifSearch(Dna, k, t):
     BestMotifs = []
@@ -94,11 +101,12 @@ def GreedyMotifSearch(Dna, k, t):
         Motifs = []
         Motifs.append(Dna[0][j:j + k])
         for l in range(1, t):
-            profile = Profile(Motifs[0:l])
+            profile = profile(Motifs[0:l])
             Motifs.append(ProfileMostProbableKmer(Dna[l], k, profile))
         if Score(Motifs) < Score(BestMotifs):
             BestMotifs = Motifs
     return BestMotifs
+
 
 def CountWithPseudocounts(Motifs):
     count = initializeCountArray(Motifs)
@@ -110,6 +118,7 @@ def CountWithPseudocounts(Motifs):
             count[symbol][j] += 1
     return count
 
+
 def ProfileWithPseudocounts(Motifs, l):
     t = len(Motifs)
     k = len(Motifs[0])
@@ -118,6 +127,7 @@ def ProfileWithPseudocounts(Motifs, l):
     for symbol, countArray in count.items():
         profile[symbol] = [x / (t + l) for x in countArray]
     return profile
+
 
 def GreedyMotifSearchWithPseudocounts(Dna, k, t):
     BestMotifs = []
@@ -137,6 +147,7 @@ def GreedyMotifSearchWithPseudocounts(Dna, k, t):
             BestMotifs = Motifs
     return BestMotifs
 
+
 def Motifs(Profile, Dna):
     k = len(Profile["A"])
     n = len(Dna)
@@ -145,6 +156,7 @@ def Motifs(Profile, Dna):
         dnaString = Dna[index]
         motifs.append(ProfileMostProbableKmer(dnaString, k, Profile))
     return motifs
+
 
 def RandomMotifs(Dna, k, t):
     motifs = []
@@ -155,6 +167,7 @@ def RandomMotifs(Dna, k, t):
         randomMotif = dnaString[startMotifIndex:endMotifIndex]
         motifs.append(randomMotif)
     return motifs
+
 
 def RandomizedMotifSearch(Dna, k, t):
     motifs = RandomMotifs(Dna, k, t)
@@ -169,6 +182,7 @@ def RandomizedMotifSearch(Dna, k, t):
             return BestMotifs
         count = +1
 
+
 def RepeatedRandomizedMotifSearch(Dna, k, t, N):
     BestMotifs = RandomMotifs(Dna, k, t)
     for index in range(0, N):
@@ -177,11 +191,13 @@ def RepeatedRandomizedMotifSearch(Dna, k, t, N):
             BestMotifs = motifs
     return BestMotifs
 
+
 def Normalize(Probabilities):
     total_count = sum(Probabilities.values())
     for key in Probabilities:
         Probabilities[key] = Probabilities[key] / total_count
     return Probabilities
+
 
 def WeightedDie(Probabilities):
     weight = random.uniform(0, 1)
@@ -191,6 +207,7 @@ def WeightedDie(Probabilities):
         if weight < 0:
             return key
 
+
 def ProfileGeneratedString(Text, profile, k):
     n = len(Text)
     probabilities = {}
@@ -198,6 +215,7 @@ def ProfileGeneratedString(Text, profile, k):
         probabilities[Text[i:i + k]] = Pr(Text[i:i + k], profile)
     probabilities = Normalize(probabilities)
     return WeightedDie(probabilities)
+
 
 def GibbsSampler(Dna, k, t, N):
     BestMotifs = []
@@ -212,38 +230,3 @@ def GibbsSampler(Dna, k, t, N):
         if Score(random_motifs) < Score(BestMotifs):
             BestMotifs = random_motifs
     return BestMotifs
-
-
-k = 15
-t = 10
-N = 100
-
-Dna = [
-    "GCGCCCCGCCCGGACAGCCATGCGCTAACCCTGGCTTCGATGGCGCCGGCTCAGTTAGGGCCGGAAGTCCCCAATGTGGCAGACCTTTCGCCCCTGGCGGACGAATGACCCCAGTGGCCGGGACTTCAGGCCCTATCGGAGGGCTCCGGCGCGGTGGTCGGATTTGTCTGTGGAGGTTACACCCCAATCGCAAGGATGCATTATGACCAGCGAGCTGAGCCTGGTCGCCACTGGAAAGGGGAGCAACATC",
-    "CCGATCGGCATCACTATCGGTCCTGCGGCCGCCCATAGCGCTATATCCGGCTGGTGAAATCAATTGACAACCTTCGACTTTGAGGTGGCCTACGGCGAGGACAAGCCAGGCAAGCCAGCTGCCTCAACGCGCGCCAGTACGGGTCCATCGACCCGCGGCCCACGGGTCAAACGACCCTAGTGTTCGCTACGACGTGGTCGTACCTTCGGCAGCAGATCAGCAATAGCACCCCGACTCGAGGAGGATCCCG",
-    "ACCGTCGATGTGCCCGGTCGCGCCGCGTCCACCTCGGTCATCGACCCCACGATGAGGACGCCATCGGCCGCGACCAAGCCCCGTGAAACTCTGACGGCGTGCTGGCCGGGCTGCGGCACCTGATCACCTTAGGGCACTTGGGCCACCACAACGGGCCGCCGGTCTCGACAGTGGCCACCACCACACAGGTGACTTCCGGCGGGACGTAAGTCCCTAACGCGTCGTTCCGCACGCGGTTAGCTTTGCTGCC",
-    "GGGTCAGGTATATTTATCGCACACTTGGGCACATGACACACAAGCGCCAGAATCCCGGACCGAACCGAGCACCGTGGGTGGGCAGCCTCCATACAGCGATGACCTGATCGATCATCGGCCAGGGCGCCGGGCTTCCAACCGTGGCCGTCTCAGTACCCAGCCTCATTGACCCTTCGACGCATCCACTGCGCGTAAGTCGGCTCAACCCTTTCAAACCGCTGGATTACCGACCGCAGAAAGGGGGCAGGAC",
-    "GTAGGTCAAACCGGGTGTACATACCCGCTCAATCGCCCAGCACTTCGGGCAGATCACCGGGTTTCCCCGGTATCACCAATACTGCCACCAAACACAGCAGGCGGGAAGGGGCGAAAGTCCCTTATCCGACAATAAAACTTCGCTTGTTCGACGCCCGGTTCACCCGATATGCACGGCGCCCAGCCATTCGTGACCGACGTCCCCAGCCCCAAGGCCGAACGACCCTAGGAGCCACGAGCAATTCACAGCG",
-    "CCGCTGGCGACGCTGTTCGCCGGCAGCGTGCGTGACGACTTCGAGCTGCCCGACTACACCTGGTGACCACCGCCGACGGGCACCTCTCCGCCAGGTAGGCACGGTTTGTCGCCGGCAATGTGACCTTTGGGCGCGGTCTTGAGGACCTTCGGCCCCACCCACGAGGCCGCCGCCGGCCGATCGTATGACGTGCAATGTACGCCATAGGGTGCGTGTTACGGCGATTACCTGAAGGCGGCGGTGGTCCGGA",
-    "GGCCAACTGCACCGCGCTCTTGATGACATCGGTGGTCACCATGGTGTCCGGCATGATCAACCTCCGCTGTTCGATATCACCCCGATCTTTCTGAACGGCGGTTGGCAGACAACAGGGTCAATGGTCCCCAAGTGGATCACCGACGGGCGCGGACAAATGGCCCGCGCTTCGGGGACTTCTGTCCCTAGCCCTGGCCACGATGGGCTGGTCGGATCAAAGGCATCCGTTTCCATCGATTAGGAGGCATCAA",
-    "GTACATGTCCAGAGCGAGCCTCAGCTTCTGCGCAGCGACGGAAACTGCCACACTCAAAGCCTACTGGGCGCACGTGTGGCAACGAGTCGATCCACACGAAATGCCGCCGTTGGGCCGCGGACTAGCCGAATTTTCCGGGTGGTGACACAGCCCACATTTGGCATGGGACTTTCGGCCCTGTCCGCGTCCGTGTCGGCCAGACAAGCTTTGGGCATTGGCCACAATCGGGCCACAATCGAAAGCCGAGCAG",
-    "GGCAGCTGTCGGCAACTGTAAGCCATTTCTGGGACTTTGCTGTGAAAAGCTGGGCGATGGTTGTGGACCTGGACGAGCCACCCGTGCGATAGGTGAGATTCATTCTCGCCCTGACGGGTTGCGTCTGTCATCGGTCGATAAGGACTAACGGCCCTCAGGTGGGGACCAACGCCCCTGGGAGATAGCGGTCCCCGCCAGTAACGTACCGCTGAACCGACGGGATGTATCCGCCCCAGCGAAGGAGACGGCG",
-    "TCAGCACCATGACCGCCTGGCCACCAATCGCCCGTAACAAGCGGGACGTCCGCGACGACGCGTGCGCTAGCGCCGTGGCGGTGACAACGACCAGATATGGTCCGAGCACGCGGGCGAACCTCGTGTTCTGGCCTCGGCCAGTTGTGTAGAGCTCATCGCTGTCATCGAGCGATATCCGACCACTGATCCAAGTCGGGGGCTCTGGGGACCGAAGTCCCCGGGCTCGGAGCTATCGGACCTCACGATCACC"]
-
-BestMotifs = GibbsSampler(Dna, k, t, N)
-for i in range(19):
-    motifs = GibbsSampler(Dna, k, t, N)
-    if Score(motifs) < Score(BestMotifs):
-        BestMotifs = motifs
-
-# print(GibbsSampler(Dna,k,t,N))
-# profile={'A': [0.5, 0.1], 'C': [0.3, 0.2], 'G': [0.2, 0.4], 'T': [0.0, 0.3]}
-# text="AAACCCAAACCC"
-# k=2
-
-motifs = ["CCA", "CCT", "CTT", "TTG"]
-DNA1 = ["AAGCCAAA",
-        "AATCCTGG",
-        "GCTACTTG",
-        "ATGTTTTG"]
-print(Motifs(Profile(motifs), DNA1))
